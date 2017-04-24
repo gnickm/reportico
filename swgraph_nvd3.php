@@ -440,6 +440,7 @@ class reportico_graph
         var colorrange = d3.scale.category10().range();
         ";
 
+		$js .= "\n/* " . print_r($this->plot, true) . "\n*/\n";
 
         $labct = count($this->plot[0]["data"]);
         if ( $this->xticklabelinterval_actual )
@@ -484,8 +485,18 @@ class reportico_graph
         }
 
         if ( $chartType == "PIE" )
-        {
-            $js .= "
+		{
+			if($this->plot[0]["linecolor"])
+			{
+				$js .= "\n";
+				$pieColors = explode(',', $this->plot[0]["linecolor"]);
+				foreach($pieColors as $k => $color)
+				{
+					$js .= "			colorrange[$k] = '$color';\n";
+				}
+			}
+
+			$js .= "
             var chart".$session_placeholder." = nv.models.pieChart()
             //.margin({top: ".$this->margintop_actual.", right: ".$this->marginright_actual.", bottom: ".$this->marginbottom_actual.", left: ".$this->marginleft_actual." + 10})
             .margin({top: 2, right: 0, bottom: 8, left: 0})

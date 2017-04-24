@@ -829,6 +829,14 @@ foreach ( $this->plot as $k => $v )
 	case "PIE":
         $piedrawn = true;
 		$piechart = true;
+   		if($v["linecolor"])
+		{
+			foreach(explode(',', $v["linecolor"]) as $ndx => $htmlcolor)
+			{
+				$rgb = htmltorgb(trim($htmlcolor));
+				$graphImage->setColorPalette($ndx,$rgb[0],$rgb[1],$rgb[2]);
+			}
+		}
         $graphImage->drawFilledCircle( ( $this->width_pdf_actual / 2 ) + 2,$this->margintop_actual + 2 + ( ( $this->height_pdf_actual - $this->margintop_actual - $this->marginbottom_actual) /  2),
                     ( $this->height_pdf_actual - $this->marginbottom_actual - $this->margintop_actual - 20 ) * 0.45  + 1,
                     200,200,200); 
@@ -841,6 +849,14 @@ foreach ( $this->plot as $k => $v )
 		break;
 
 	case "PIE3D":
+		if($v["linecolor"])
+		{
+			foreach(explode(',', $v["linecolor"]) as $ndx => $htmlcolor)
+			{
+				$rgb = htmltorgb(trim($htmlcolor));
+				$graphImage->setColorPalette($ndx,$rgb[0],$rgb[1],$rgb[2]);
+			}
+		}
         $piedrawn = true;
 		$piechart = true;
         $graphImage->drawPieGraph($graphData->GetData(),$graphData->GetDataDescription(),
