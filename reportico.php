@@ -3804,6 +3804,8 @@ class reportico extends reportico_object
             $old_error_handler = set_error_handler("ErrorHandler", 0);
             if ( @file_exists($this->projects_folder."/$g_project/reportico_defaults.php" ))
                 include_once($this->projects_folder."/$g_project/reportico_defaults.php");
+			else if ( @file_exists(__DIR__."/".$this->projects_folder."/$g_project/reportico_defaults.php" ))
+                include_once(__DIR__."/".$this->projects_folder."/$g_project/reportico_defaults.php");
             else if ( @file_exists(__DIR__."/reportico_defaults.php" ))
                 include_once(__DIR__."/reportico_defaults.php");
             if ( function_exists("reportico_defaults") )
