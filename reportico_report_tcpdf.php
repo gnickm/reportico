@@ -855,8 +855,8 @@ echo $txt;
             // Use TCPDF's mechanisms for delivering via attachment or inline
             $attachfile = "reportico.pdf";
             if ( $this->reportfilename )
-                $attachfile = preg_replace("/ /", "_", $this->reportfilename.".pdf");
-                       header('Content-Disposition: attachment;filename='.$attachfile);
+                $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
+            header('Content-Disposition: attachment;filename='.$attachfile);
 
 
             // INLINE output is just returned to browser window it is invoked from 

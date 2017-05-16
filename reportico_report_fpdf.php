@@ -409,7 +409,7 @@ class reportico_report_fpdf extends reportico_report
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
             $attachfile = "reportico.pdf";
             if ( $this->reportfilename )
-                $attachfile = preg_replace("/ /", "_", $this->reportfilename.".pdf");
+                $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
 
             // INLINE output is just returned to browser window it is invoked from
             // with hope that browser uses plugin

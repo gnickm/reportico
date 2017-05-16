@@ -78,7 +78,7 @@ class reportico_report_csv extends reportico_report
 		    header("Content-type: application/octet-stream");
             $attachfile = "reportico.csv";
             if ( $this->reporttitle )
-                $attachfile = preg_replace("/ /", "_", $this->reporttitle.".csv");
+                $attachfile = preg_replace("/ /", "_", $this->reporttitle.date('_Y-m-d').".csv");
 		    header('Content-Disposition: attachment;filename='.$attachfile);
 
 		    header("Pragma: no-cache");
