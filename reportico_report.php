@@ -395,8 +395,12 @@ class reportico_report extends reportico_object
 		
 				}
 			}
-			if ( $label || $value )
+			if ( $label || $value ) {
+				// Remove any "magic" commas and quotes
+				$value = str_replace('~!~', ',', $value);
+				$value = str_replace("''", "'", $value);
 				$this->format_criteria_selection($label, $value);
+			}
             }
 			$this->after_format_criteria_selection();
 		}

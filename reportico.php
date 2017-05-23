@@ -8259,6 +8259,9 @@ class reportico_criteria_column extends reportico_query_column
 				break;
 		}
 
+		// Remove any "magic" commas
+		$cls = str_replace('~!~', ',', $cls);
+
 		return($cls);
 	}
 
