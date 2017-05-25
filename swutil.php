@@ -859,9 +859,9 @@ function load_mode_language_pack($mode, $output_encoding = "utf-8", $replace = f
     else
     {
         $langfile = $langfile."/".$g_language."/".$mode.".php";
-        if ( !is_file($langfile) )
+        if ( !stream_resolve_include_path($langfile) )
         {
-            trigger_error ( "Language pack for mode  $mode, language $g_language not found", E_USER_ERROR );
+            trigger_error ( "Language pack for mode $mode, language $g_language not found", E_USER_ERROR );
         }
         else
         {
