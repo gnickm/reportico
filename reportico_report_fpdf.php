@@ -402,14 +402,23 @@ class reportico_report_fpdf extends reportico_report
 			$buf = $this->document->Output("", "S");
 			$len = strlen($buf);
 
+            $attachfile = "reportico.pdf";
+            if ( $this->reportfilename )
+                $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
+
+			// OUTPUT_ONLY simply outputs the result -- no headers -- and
+			// returns to the caller instead of dying
+			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) {
+				echo $buf;
+				$this->report_file = $attachfile;
+				return;
+			}
+			
 			if ( ob_get_length() > 0 )
 				ob_clean();	
 
 			header("Content-Type: application/pdf");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-            $attachfile = "reportico.pdf";
-            if ( $this->reportfilename )
-                $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
 
             // INLINE output is just returned to browser window it is invoked from
             // with hope that browser uses plugin

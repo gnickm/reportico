@@ -849,13 +849,22 @@ echo $txt;
 			//header("Content-Length: $len");
 			//header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 
-			if ( ob_get_length() > 0 )
-				ob_clean();	
-
             // Use TCPDF's mechanisms for delivering via attachment or inline
             $attachfile = "reportico.pdf";
             if ( $this->reportfilename )
                 $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
+			
+			// OUTPUT_ONLY simply outputs the result -- no headers -- and
+			// returns to the caller instead of dying
+			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) {
+				echo $this->document->Output($attachfile, "S");
+				$this->report_file = $attachfile;
+				return;
+			}
+		
+			if ( ob_get_length() > 0 )
+				ob_clean();	
+
             header('Content-Disposition: attachment;filename='.$attachfile);
 
 

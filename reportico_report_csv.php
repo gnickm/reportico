@@ -67,7 +67,20 @@ class reportico_report_csv extends reportico_report
 			$buf = "";
 			$len = strlen($buf) + 1;
 
-            if ( $this->query->pdf_delivery_mode == "DOWNLOAD_SAME_WINDOW" && $this->query->reportico_ajax_called )
+			$attachfile = "reportico.csv";
+            if ( $this->reporttitle )
+                $attachfile = preg_replace("/ /", "_", $this->reporttitle.date('_Y-m-d').".csv");
+	
+			// OUTPUT_ONLY simply outputs the result -- no headers -- and
+			// returns to the caller instead of dying
+			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) 
+			{
+				echo $this->text;
+				$this->report_file = $attachfile;
+				return;
+			}
+			
+			if ( $this->query->pdf_delivery_mode == "DOWNLOAD_SAME_WINDOW" && $this->query->reportico_ajax_called )
             {   
                 $this->text = base64_encode($this->text);
             }
@@ -76,11 +89,7 @@ class reportico_report_csv extends reportico_report
 		        ob_clean();	
 
 		    header("Content-type: application/octet-stream");
-            $attachfile = "reportico.csv";
-            if ( $this->reporttitle )
-                $attachfile = preg_replace("/ /", "_", $this->reporttitle.date('_Y-m-d').".csv");
 		    header('Content-Disposition: attachment;filename='.$attachfile);
-
 		    header("Pragma: no-cache");
 		    header("Expires: 0");
 
