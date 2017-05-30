@@ -42,8 +42,10 @@ if ( function_exists( "imagecreatefromstring" ) )
     include_once("pChart/pData.class");
     include_once("pChart/pCache.class");
 
-    $fontpath = find_best_location_in_include_path( "pChart/fonts" );
-    define ( "PCHARTFONTS_DIR", $fontpath."/" );
+	if(!defined("PCHARTFONTS_DIR")) {
+    	$fontpath = find_best_location_in_include_path( "pChart/fonts" );
+    	define ( "PCHARTFONTS_DIR", $fontpath."/" );
+	}
 }
 else
 {
