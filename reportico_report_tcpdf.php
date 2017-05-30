@@ -858,7 +858,6 @@ echo $txt;
 			// returns to the caller instead of dying
 			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) {
 				echo $this->document->Output($attachfile, "S");
-				$this->report_file = $attachfile;
 				return;
 			}
 		

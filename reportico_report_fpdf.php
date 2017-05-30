@@ -410,7 +410,6 @@ class reportico_report_fpdf extends reportico_report
 			// returns to the caller instead of dying
 			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) {
 				echo $buf;
-				$this->report_file = $attachfile;
 				return;
 			}
 			

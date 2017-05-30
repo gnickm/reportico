@@ -76,7 +76,6 @@ class reportico_report_csv extends reportico_report
 			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) 
 			{
 				echo $this->text;
-				$this->report_file = $attachfile;
 				return;
 			}
 			
