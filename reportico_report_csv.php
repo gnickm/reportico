@@ -75,7 +75,7 @@ class reportico_report_csv extends reportico_report
 			// returns to the caller instead of dying
 			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) 
 			{
-				echo $this->text;
+				// Text has already been output here for some reason... So, uh, just return?
 				return;
 			}
 			
