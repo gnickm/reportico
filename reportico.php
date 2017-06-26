@@ -8220,6 +8220,7 @@ class reportico_criteria_column extends reportico_query_column
 						if ( is_string($col) )
 						{
 							$col = trim($col);
+							$col = str_replace("'", "''", $col);
 						}
 
 						if ( $col == "(ALL)" )
