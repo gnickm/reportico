@@ -4125,6 +4125,7 @@ class reportico extends reportico_object
                 die;
                     
 			case "ADMIN":
+				$this->set_request_columns();
 				$txt = "";
 				$this->handle_xml_query_input($mode);
 				$this->build_admin_screen();
@@ -7972,7 +7973,7 @@ class reportico_criteria_column extends reportico_query_column
 			return $cls;
 		}
 
-		if ( !$this->column_value ) 
+		if ( !$this->column_value && !$this->column_value2 ) 
 		{
 			return ($cls);
 		}
@@ -8120,6 +8121,8 @@ class reportico_criteria_column extends reportico_query_column
 				
 			case "DATE":
 				$cls = "";
+                if ( $this->column_value && !trim($this->column_value))
+                    $this->column_value = false;
 				if ( $this->column_value )
 				{
 					$val1 = parse_date($this->column_value, false, SW_PREP_DATEFORMAT);
@@ -8146,16 +8149,19 @@ class reportico_criteria_column extends reportico_query_column
 				
 			case "DATERANGE":
 				$cls = "";
-				if ( $this->column_value )
+                if ( $this->column_value && !trim($this->column_value))
+                    $this->column_value = false;
+                if ( $this->column_value2 && !trim($this->column_value2))
+                    $this->column_value2 = false;
+				if ( $this->column_value || $this->column_value2 )
 				{
                     // If daterange value here is a range in a single value then its been
                     // run directly from command line and needs splitting up using "-"
 
-
 					$val1 = parse_date($this->column_value,false, SW_PREP_DATEFORMAT);
 					$val2 = parse_date($this->column_value2,false, SW_PREP_DATEFORMAT);
-					$val1 = convertYMDtoLocal($val1, SW_PREP_DATEFORMAT, SW_DB_DATEFORMAT);
-					$val2 = convertYMDtoLocal($val2, SW_PREP_DATEFORMAT, SW_DB_DATEFORMAT);
+					$val1 = trim(convertYMDtoLocal($val1, SW_PREP_DATEFORMAT, SW_DB_DATEFORMAT));
+					$val2 = trim(convertYMDtoLocal($val2, SW_PREP_DATEFORMAT, SW_DB_DATEFORMAT));
 					if ( $lhs )
 					{	
 						if ( $this->table_name  && $this->column_name )
@@ -8167,13 +8173,22 @@ class reportico_criteria_column extends reportico_query_column
 
 					if ( $add_del )
 						$del = $this->get_value_delimiter();
-					if ( $rhs )
+
+					if ( !$val1 && ( $val2 || !$lhs )  )
+					{
+						$cls .= " < ";
+						$cls .= $del.$val2.$del;
+					}
+					else if ( $val1 && !$val2  )
+					{
+						$cls .= " > ";
+						$cls .= $del.$val1.$del;
+					}
+					else if ( $rhs )
 					{
 						$cls .= " BETWEEN ";
-						//$cls .= $del.$this->column_value.$del;
 						$cls .= $del.$val1.$del;
 						$cls .= " AND ";
-						//$cls .= $del.$this->column_value2.$del;
 						$cls .= $del.$val2.$del;
 					}
 					if ( $rhs1 )
@@ -8185,6 +8200,10 @@ class reportico_criteria_column extends reportico_query_column
 						$cls = $del.$val2.$del;
 					}
 				}
+                else
+                {
+                    $cls = false;
+                }
 				break;
 				
 			case "LOOKUP":
