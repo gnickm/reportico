@@ -45,7 +45,7 @@
  * Installation path (/var/www/tcpdf/).
  * By default it is automatically calculated but you can also set it as a fixed string to improve performances.
  */
-//define ('K_PATH_MAIN', '');
+define ('K_PATH_MAIN', '/home/rmoore/pers/www/reportico/tcpdf/');
 
 /**
  * URL path to tcpdf installation folder (http://localhost/tcpdf/).
@@ -57,7 +57,7 @@
  * Path for PDF fonts.
  * By default it is automatically set but you can also set it as a fixed string to improve performances.
  */
-//define ('K_PATH_FONTS', K_PATH_MAIN.'fonts/');
+define ('K_PATH_FONTS', K_PATH_MAIN.'fonts/');
 
 /**
  * Default images directory.
@@ -204,7 +204,7 @@ define('K_SMALL_RATIO', 2/3);
 /**
  * Set to true to enable the special procedure used to avoid the overlappind of symbols on Thai language.
  */
-define('K_THAI_TOPCHARS', true);
+define('K_THAI_TOPCHARS', false);
 
 /**
  * If true allows to call TCPDF methods using HTML syntax
