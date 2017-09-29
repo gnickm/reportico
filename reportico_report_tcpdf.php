@@ -7,7 +7,7 @@
  modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 2
  of the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -20,7 +20,7 @@
  * File:        reportico_report_pdf.php
  *
  * Base class for all report output formats.
- * Defines base functionality for handling report 
+ * Defines base functionality for handling report
  * page headers, footers, group headers, group trailers
  * data lines
  *
@@ -113,7 +113,7 @@ class reportico_report_tcpdf extends reportico_report
     var $no_columns_printed = 0;
     var $no_columns_to_print = 0;
 
-    // Holds selected styles for rows/cells/allcells so they can merged 
+    // Holds selected styles for rows/cells/allcells so they can merged
     var $row_styles = array();
     var $allcell_styles = array();
     var $cell_styles = array();
@@ -123,7 +123,7 @@ class reportico_report_tcpdf extends reportico_report
     // total width and height and then draw all text elements in Draw mode based
     // on knowing how wide things are
     var $draw_mode = "DRAW";
-	
+
     // Factor to apply to image pixel size to get them to show at correct size in PDF document
 	var	$pdfImageDPIScale = 0.72;
 
@@ -132,8 +132,8 @@ class reportico_report_tcpdf extends reportico_report
 
     var $inGroupOutput = false;
 
-    // Page and body styles in middle of page should not have thinkgs like 
-    // top margin or position applied except on first print in page/body. This is used to 
+    // Page and body styles in middle of page should not have thinkgs like
+    // top margin or position applied except on first print in page/body. This is used to
     // hold modified page styles for mid page use
     var $all_page_page_styles = false;
     var $top_page_page_styles = false;
@@ -164,6 +164,8 @@ class reportico_report_tcpdf extends reportico_report
 
     var $cell_row_top_addition = 0;
     var $cell_row_bottom_addition = 0;
+
+    var $page_thrown_for_line = false;
 
 	function __construct ()
 	{
@@ -263,9 +265,9 @@ echo $txt;
 			$this->abs_page_height = $this->page_types[$this->page_type]["width"];
 		}
 		$this->abs_top_margin = $this->abs_paging_height($this->query->get_attribute("TopMargin"));
-		$this->abs_bottom_margin = $this->abs_page_height - 
+		$this->abs_bottom_margin = $this->abs_page_height -
 						$this->abs_paging_height($this->query->get_attribute("BottomMargin"));
-		$this->abs_right_margin = $this->abs_page_width - 
+		$this->abs_right_margin = $this->abs_page_width -
 						$this->abs_paging_width($this->query->get_attribute("RightMargin"));
 		$this->abs_left_margin = $this->abs_paging_width($this->query->get_attribute("LeftMargin"));
 		$this->abs_print_width =  $this->abs_right_margin - $this->abs_left_margin;
@@ -320,7 +322,7 @@ echo $txt;
                 //if ( !isset ($this->document->fonts[strtolower($this->fontName)] ) )
                     //$this->document->AddFont($this->fontName, '', $this->fontName.'.php');
 
-            // If the font loaded is a TrueTypeUnicode font, then we wnat to 
+            // If the font loaded is a TrueTypeUnicode font, then we wnat to
             // use UniCode PDF generator instead
             // if ( $this->document->FontType == "TrueTypeUnicode" )
             // {
@@ -342,7 +344,7 @@ echo $txt;
                 if ( !isset ($this->document->fonts[strtolower($this->fontName)] ) )
                     $this->document->AddFont($this->fontName, '', $this->fontName.'.php');
 
-            // If the font loaded is a TrueTypeUnicode font, then we wnat to 
+            // If the font loaded is a TrueTypeUnicode font, then we wnat to
             // use UniCode PDF generator instead
             if ( $this->document->FontType == "TrueTypeUnicode" )
             {
@@ -437,7 +439,7 @@ echo $txt;
         $padding = $this->query->output_reportbody_styles["style_margin_left"] + $this->query->output_reportbody_styles["style_padding_left"];
         $padding = $this->query->output_reportbody_styles["style_margin_left"] + $this->query->output_reportbody_styles["style_padding_left"] + $this->query->output_reportbody_styles["style_border_left"] / 2;
         $padding = 0;
-    
+
         //$this->query->output_page_styles["style_start"] = $this->abs_left_margin + $padding;
         $this->query->output_page_styles["style_start"] = $this->query->output_reportbody_styles["style_start"];
 
@@ -853,25 +855,25 @@ echo $txt;
             $attachfile = "reportico.pdf";
             if ( $this->reportfilename )
                 $attachfile = preg_replace("/ /", "_", $this->reportfilename.date('_Y-m-d').".pdf");
-			
+
 			// OUTPUT_ONLY simply outputs the result -- no headers -- and
 			// returns to the caller instead of dying
 			if ( $this->query->pdf_delivery_mode == "OUTPUT_ONLY" ) {
 				echo $this->document->Output($attachfile, "S");
 				return;
 			}
-		
+
 			if ( ob_get_length() > 0 )
-				ob_clean();	
+				ob_clean();
 
             header('Content-Disposition: attachment;filename='.$attachfile);
 
 
-            // INLINE output is just returned to browser window it is invoked from 
+            // INLINE output is just returned to browser window it is invoked from
             // with hope that browser uses plugin
             if ( $this->query->pdf_delivery_mode == "INLINE" )
             {
-			    $this->document->Output($attachfile, "I"); 
+			    $this->document->Output($attachfile, "I");
                 die;
             }
             // DOWNLOAD_SAME_WINDOW output is ajaxed back to current browser window and then downloaded
@@ -887,7 +889,7 @@ echo $txt;
             // DOWNLOAD_NEW_WINDOW new browser window is opened to download file
             else
             {
-			    $buf = $this->document->Output($attachfile, "D");  
+			    $buf = $this->document->Output($attachfile, "D");
                 die;
             }
 
@@ -1068,7 +1070,7 @@ echo $txt;
 			if ( !$group_label )
 				$group_label = $value_col["GroupTrailerValueColumn"]->get_attribute("column_title" );
             if ( !$group_label )
-            {  
+            {
                 $group_label = $value_col["GroupTrailerValueColumn"]->query_name;
                 $group_label = str_replace("_", " ", $group_label);
                 $group_label = ucwords(strtolower($group_label));
@@ -1134,7 +1136,7 @@ echo $txt;
             $this->yjump = 2;
             // Fetch Group Header Label Start Column + display
             //$this->unapply_style_tags( "DEFAULT", $this->mid_page_page_styles);
-        
+
             // Display group header value
 
             $this->set_position($this->abs_left_margin, $this->group_header_start);
@@ -1179,7 +1181,7 @@ echo $txt;
 
 	}
     //Cell with horizontal scaling if text is too wide
-    function draw_cell_container($w,$h=0,$txt='',$border=0,$ln=0,$align='',$valign="T") 
+    function draw_cell_container($w,$h=0,$txt='',$border=0,$ln=0,$align='',$valign="T")
     {
         // Set custom width
         $custom_width = end( $this->stylestack["width"]);
@@ -1347,7 +1349,7 @@ echo $txt;
                     break;
             }
         }
-        
+
         $borderstyle = false;
         $borderedges = false;
         $borderwidth = false;
@@ -1371,16 +1373,16 @@ echo $txt;
                 $borderwidth = $this->abs_metric($borderwidth);
 
             // Add extra padding in cell to avoid text conficting with border
-            //if ( $borderwidth && preg_match("/T/", $borderedges) ) $toppad += $borderwidth; 
-            //if ( $borderwidth && preg_match("/B/", $borderedges) ) $bottompad += $borderwidth; 
-            //if ( $borderwidth && preg_match("/L/", $borderedges) ) $leftpad += $borderwidth; 
-            //if ( $borderwidth && preg_match("/R/", $borderedges) ) $rightpad += $borderwidth; 
+            //if ( $borderwidth && preg_match("/T/", $borderedges) ) $toppad += $borderwidth;
+            //if ( $borderwidth && preg_match("/B/", $borderedges) ) $bottompad += $borderwidth;
+            //if ( $borderwidth && preg_match("/L/", $borderedges) ) $leftpad += $borderwidth;
+            //if ( $borderwidth && preg_match("/R/", $borderedges) ) $rightpad += $borderwidth;
 
             // Calulate addition cellheight caused by top and bottom borders
-            if ( $borderwidth && preg_match("/T/", $borderedges) ) $topborderadditiontoheight = $borderwidth / 2; 
-            if ( $borderwidth && preg_match("/B/", $borderedges) ) $botborderadditiontoheight = $borderwidth / 2; 
-            if ( $borderwidth && preg_match("/L/", $borderedges) ) $leftborderadditiontoheight = $borderwidth / 2; 
-            if ( $borderwidth && preg_match("/R/", $borderedges) ) $rightborderadditiontoheight = $borderwidth / 2; 
+            if ( $borderwidth && preg_match("/T/", $borderedges) ) $topborderadditiontoheight = $borderwidth / 2;
+            if ( $borderwidth && preg_match("/B/", $borderedges) ) $botborderadditiontoheight = $borderwidth / 2;
+            if ( $borderwidth && preg_match("/L/", $borderedges) ) $leftborderadditiontoheight = $borderwidth / 2;
+            if ( $borderwidth && preg_match("/R/", $borderedges) ) $rightborderadditiontoheight = $borderwidth / 2;
             //$topborderadditiontoheight = $borderwidth;
             //$botborderadditiontoheight = $borderwidth;
         }
@@ -1406,7 +1408,7 @@ echo $txt;
             //if ( $this->document->GetFontSizePt() == 0 )
                 //$toppad +=$topborderadditiontoheight;
         }
-    
+
         // Cells with borders draw with half border appearing outside the text box so mode text down by half to give it space
         if ( $botborderadditiontoheight )
         {
@@ -1425,7 +1427,7 @@ echo $txt;
         //if ( $rightborderadditiontoheight )
             //$w -= $rightborderadditiontoheight;
 
-        // TCPDF ignores a right margin if a width is specified.. we always specify a width, so 
+        // TCPDF ignores a right margin if a width is specified.. we always specify a width, so
         // to use a right margin reduce the width by the right margin instead also widht
         // must be reduced by left margin because TCPDF does not reduce with by the margin
         if ( $rightmargin )
@@ -1468,7 +1470,7 @@ echo $txt;
                         else if ( $border_style == "dashed" )
                             $border_style = 2;
 
-                        $cellborder = array ( 
+                        $cellborder = array (
                                       //'mode' => "int",
                                       $borderedges => array (
                                       'width' => $borderwidth,
@@ -1513,7 +1515,7 @@ echo $txt;
 
         // To cater for multiline values, jump to bottom of line + padding -
         // cell height
-           
+
         $jumpy = 0;
         if ( $toppad && $this->pdfDriver == "fpdf" )
         {
@@ -1542,7 +1544,7 @@ echo $txt;
 
             $pady = $this->document->GetY() - 1;
 		    $this->set_position(false, $pady + 2);
-            
+
             $prevx = $this->document->GetX();
 
             if ( $borderwidth ) $this->document->setLineWidth($borderwidth);
@@ -1606,10 +1608,10 @@ echo $txt;
             //else
                 //$p = $this->draw_image($background_image, $this->document->GetX() + $leftmargin, $this->document->GetY() + $topmargin, $custom_width, $custom_height, false, $align);
             $p += $topmargin;
-            
+
 //echo "$last_draw_end_y $storeY $background_image ".$p."<BR>";
             //if ($this->document->GetY() + $p > $this->group_header_end )
-                //$this->group_header_end = $this->document->GetY() + $p; 
+                //$this->group_header_end = $this->document->GetY() + $p;
             $cell_height = $p;
             $last_draw_end_y =  $storeY + $p;
 		    $this->set_position($preimageX, $preimageY );
@@ -1655,7 +1657,7 @@ echo $txt;
                     else if ( $border_style == "dashed" )
                         $border_style = 2;
 
-                    $cellborder = array ( 
+                    $cellborder = array (
                                   //'mode' => "int",
                                   $borderedges => array (
                                   'width' => $borderwidth,
@@ -1667,7 +1669,7 @@ echo $txt;
 
                 }
             }
-                                            
+
         }
 
         $this->last_cell_xpos = $this->document->GetX();
@@ -1699,12 +1701,12 @@ echo $txt;
             {
                 $this->current_line_height = $cell_height;
             }
-    
+
             $this->last_draw_end_y =  $this->document->GetY();
             if ( $this->last_draw_end_y < $last_draw_end_y )
                 $this->last_draw_end_y = $last_draw_end_y;
         }
-            
+
 
         // Jump back
 		$this->set_position(false, $storey);
@@ -1725,7 +1727,7 @@ echo $txt;
         }
         else
         {
-            if ( $h !== false ) 
+            if ( $h !== false )
             {
 		        $this->document->Ln($h);
             }
@@ -1759,7 +1761,7 @@ echo $txt;
 	{
 		$this->reporttitle = $this->query->derive_attribute("ReportTitle", "Set Report Title");
 		//$this->reporttitle = preg_replace("/<[^>]*>/", "", $this->reporttitle);
-                    
+
         // Add custom image here
         if ( defined("PDF_HEADER_IMAGE") )
         {
@@ -1797,10 +1799,10 @@ echo $txt;
             $this->apply_style_tags( "EACHHEADMID", $this->mid_cell_reportbody_styles);
             $this->apply_style_tags( "EACHHEADMID", $this->mid_cell_criteria_styles);
 
-            $group_xpos = 
-                     $this->all_page_criteria_styles["style_start"] + 
-                     $this->all_page_criteria_styles["style_margin_left"] + 
-                     $this->all_page_criteria_styles["style_padding_left"] + 
+            $group_xpos =
+                     $this->all_page_criteria_styles["style_start"] +
+                     $this->all_page_criteria_styles["style_margin_left"] +
+                     $this->all_page_criteria_styles["style_padding_left"] +
                      $this->all_page_criteria_styles["style_border_left"] ;
 		    $this->set_position($group_xpos, $y);
 		    $padstring = $label;
@@ -1819,10 +1821,10 @@ echo $txt;
 
 		    $this->yjump = 0;
 		    // Fetch Group Header Label Start Column + display
-            $group_xpos = 
-                     $this->all_page_criteria_styles["style_start"] + 
-                     $this->all_page_criteria_styles["style_margin_left"] + 
-                     $this->all_page_criteria_styles["style_padding_left"] + 
+            $group_xpos =
+                     $this->all_page_criteria_styles["style_start"] +
+                     $this->all_page_criteria_styles["style_margin_left"] +
+                     $this->all_page_criteria_styles["style_padding_left"] +
                      $this->all_page_criteria_styles["style_border_left"] ;
 		    $this->set_position($group_xpos, $y);
 		    $padstring = $label;
@@ -1834,17 +1836,17 @@ echo $txt;
 
 		    if ( $this->yjump )
 			    $this->set_position(false, $y + $this->yjump);
-    
+
         }
 	}
 
 	function format_criteria_selection($label, $value)
 	{
 		$y = $this->document->GetY();
-        $criteria_label_start = 
-                     $this->all_page_criteria_styles["style_start"] + 
-                     $this->all_page_criteria_styles["style_margin_left"] + 
-                     $this->all_page_criteria_styles["style_padding_left"] + 
+        $criteria_label_start =
+                     $this->all_page_criteria_styles["style_start"] +
+                     $this->all_page_criteria_styles["style_margin_left"] +
+                     $this->all_page_criteria_styles["style_padding_left"] +
                      $this->all_page_criteria_styles["style_border_left"] ;
         $criteria_label_width = 120;
         $criteria_value_width = $this->all_page_criteria_styles["style_width"] -
@@ -1891,10 +1893,10 @@ echo $txt;
 
 		$this->yjump = 0;
 		// Fetch Group Header Label Start Column + display
-        $group_xpos = 
-                     $this->all_page_criteria_styles["style_start"] + 
-                     $this->all_page_criteria_styles["style_margin_left"] + 
-                     $this->all_page_criteria_styles["style_padding_left"] + 
+        $group_xpos =
+                     $this->all_page_criteria_styles["style_start"] +
+                     $this->all_page_criteria_styles["style_margin_left"] +
+                     $this->all_page_criteria_styles["style_padding_left"] +
                      $this->all_page_criteria_styles["style_border_left"] ;
 
         // Draw label
@@ -2150,7 +2152,7 @@ echo $txt;
 
             if ( session_request_item("target_style", "TABLE" ) != "FORM" )
 	            $this->unapply_style_tags( "GROUPHEADERLABEL", $this->query->output_group_header_label_styles);
-    
+
             // Display group header value
 		    $contenttype = $col->derive_attribute( "content_type",  $col->query_name);
             if ( session_request_item("target_style", "TABLE" ) != "FORM" )
@@ -2170,11 +2172,11 @@ echo $txt;
 			    $qn = get_query_column($col->query_name, $this->query->columns ) ;
 			    $sql = @preg_replace("/.*imagesql=/", "", $qn->column_value);
 			    $sql = @preg_replace("/'>$/", "", $sql);
-			    $str = 
+			    $str =
 			    &get_db_image_string(
-				    $this->query->datasource->driver, 
-				    $this->query->datasource->database, 
-				    $this->query->datasource->host_name, 
+				    $this->query->datasource->driver,
+				    $this->query->datasource->database,
+				    $this->query->datasource->host_name,
 				    $sql,
 				    $this->query->datasource->ado_connection
 			    );
@@ -2264,7 +2266,7 @@ echo $txt;
 	function plot_graph(&$graph, $graph_ct = false)
 	{
 		//$this->end_line();
-		
+
 		$tmpnam = tempnam(SW_TMP_DIR, "gph");
         if ( defined("SW_GRAPH_ENGINE") && SW_GRAPH_ENGINE == "PCHART" )
         {
@@ -2429,7 +2431,7 @@ echo $txt;
         if ( $this->inOverflow && !$force )
             return;
 
-        
+
 	    $this->check_line_requirement($this->query->output_header_styles);
 
         $this->check_for_detail_page_start();
@@ -2437,7 +2439,7 @@ echo $txt;
         if ( session_request_item("target_style", "TABLE" ) == "FORM" )
             return;
 
-        // Handle multi line headers by processing all headers 
+        // Handle multi line headers by processing all headers
         // in "CALCULATE" mode and then print them on the appropriate line
         $this->draw_mode = "CALCULATE";
         $this->current_line_height = 0;
@@ -2480,7 +2482,7 @@ echo $txt;
     function showXY($txt = "")
     {
         $x = $this->document->GetX();
-        $y = $this->document->GetY(); 
+        $y = $this->document->GetY();
         $this->set_position (2, false);
         $txt .= " ($x, $y)";
         $this->document->Cell(140, 20, $txt);
@@ -2557,11 +2559,11 @@ echo $txt;
 	    {
 			$sql = @preg_replace("/.*imagesql=/", "", $column_item->column_value);
 			$sql = @preg_replace("/'>$/", "", $sql);
-			$str = 
+			$str =
 			&get_db_image_string(
-				$this->query->datasource->driver, 
-				$this->query->datasource->database, 
-				$this->query->datasource->host_name, 
+				$this->query->datasource->driver,
+				$this->query->datasource->database,
+				$this->query->datasource->host_name,
 				$sql,
 				$this->query->datasource->ado_connection
 			);
@@ -2632,7 +2634,7 @@ echo $txt;
 		}
 	}
 
-    // If first cell in row then, if row has border then ensure it 
+    // If first cell in row then, if row has border then ensure it
     // is drawn with top, bottow, left border, last cell has right, top, bottom
     // middle cells have top and bottom
     // first column of a row has parent row with border
@@ -2649,11 +2651,11 @@ echo $txt;
             if ( !strstr ( $cellstyle, "T" ) && strstr ( $rowstyle, "T" ) ) $cellstyle .= "T";
             if ( !strstr ( $cellstyle, "B" ) && strstr ( $rowstyle, "B" ) ) $cellstyle .= "B";
             if ( $this->no_columns_printed == 1 )
-            {   
+            {
                 if ( !strstr ( $cellstyle, "L" ) && strstr ( $rowstyle, "L" ) ) $cellstyle .= "L";
             }
             if ( $this->no_columns_printed == $this->no_columns_to_print )
-            {   
+            {
                 if ( !strstr ( $cellstyle, "R" ) && strstr ( $rowstyle, "R" ) ) $cellstyle .= "R";
             }
             end($this->stylestack["border-edges"]);
@@ -2666,7 +2668,7 @@ echo $txt;
     {
         $styleset[$tag]  = $value;
     }
-        
+
     // Removes a tag element from the style stack
     function disable_style_tag ( $styleset, $tag )
     {
@@ -2687,7 +2689,7 @@ echo $txt;
             {
                 if ( $k != $want )
                     continue;
-            
+
                 if ( !$bit )
                 {
                     unset ( $work_styleset[$k] );
@@ -2699,7 +2701,7 @@ echo $txt;
                     //$ar = explode ( ",", preg_replace("/[^0-9]+/", ",", $v));
                     $ar = explode ( " ", $v);
                     if ( $ar )
-                        if ( count($ar) == 1 && $ar[0] > 0 ) 
+                        if ( count($ar) == 1 && $ar[0] > 0 )
                         {
                             $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                         }
@@ -2756,7 +2758,7 @@ echo $txt;
                         //$ar = explode ( ",", preg_replace("/[^0-9]+/", ",", $v));
                         $ar = explode ( " ", $v);
                         if ( $ar )
-                            if ( count($ar) == 1 && $ar[0] > 0 ) 
+                            if ( count($ar) == 1 && $ar[0] > 0 )
                             {
                                 $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                             }
@@ -2791,7 +2793,7 @@ echo $txt;
                         //$ar = explode ( ",", preg_replace("/[^0-9]+/", ",", $v));
                         $ar = explode ( " ", $v);
                         if ( $ar )
-                            if ( count($ar) == 1 && $ar[0] > 0 ) 
+                            if ( count($ar) == 1 && $ar[0] > 0 )
                             {
                                 $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                             }
@@ -2829,7 +2831,7 @@ echo $txt;
                         $borderwidth = 0;
                         if ( $ar )
                         {
-                            if ( count($ar) == 1 && $ar[0] > 0 ) 
+                            if ( count($ar) == 1 && $ar[0] > 0 )
                             {
                                 $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                             }
@@ -2872,7 +2874,7 @@ echo $txt;
         //var_dump($this->stylestack["type"]);
     }
 
-        
+
     function apply_style_tags ( $type, $styleset, $parent_styleset = false, $grandparent_styleset = false, $apply_type = false, $applyto = false )
     {
         $styleset["type"] = $type;
@@ -2893,7 +2895,7 @@ echo $txt;
                     // Dont apply anything except the applyto specified
                     if ( $applyto && $ct == 3 && $applyto != $k )
                         continue;
-                
+
                     if ( isset ( $this->stylestack[$k] ) )
                     {
                         if ( $k == "margin" )
@@ -2902,7 +2904,7 @@ echo $txt;
                             //$ar = explode ( ",", preg_replace("/[^0-9]+/", ",", $v));
                             $ar = explode ( " ", $v);
                             if ( $ar )
-                                if ( count($ar) == 1 && $ar[0] > 0 ) 
+                                if ( count($ar) == 1 && $ar[0] > 0 )
                                 {
                                     $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                                 }
@@ -2933,7 +2935,7 @@ echo $txt;
                             //$ar = explode ( ",", preg_replace("/[^0-9]+/", ",", $v));
                             $ar = explode ( " ", $v);
                             if ( $ar )
-                                if ( count($ar) == 1 && $ar[0] > 0 ) 
+                                if ( count($ar) == 1 && $ar[0] > 0 )
                                 {
                                     $tmp[0] = $tmp[1] = $tmp[2] = $tmp[3] = $ar[0];
                                 }
@@ -2975,7 +2977,7 @@ echo $txt;
                                         break;
                                     }
                                 }
-                                if ( count($ar) == 1 && $ar[0] > 0 ) 
+                                if ( count($ar) == 1 && $ar[0] > 0 )
                                 {
                                     $tmp = "LBTR";
                                 }
@@ -3102,7 +3104,7 @@ echo $txt;
             if ( $ct == 1 ) $work_styleset =& $grandparent_styleset;
             if ( $ct == 2 ) $work_styleset =& $parent_styleset;
             if ( $ct == 3 ) $work_styleset =& $styleset;
-            
+
             if ( !$work_styleset )
                 continue;
 
@@ -3113,7 +3115,7 @@ echo $txt;
                     // Dont apply anything except the applyto specified
                     if ( $applyto && $ct == 3 && $applyto != $k )
                         continue;
-                
+
                     if ( isset ( $this->stylestack[$k] ) )
                     {
                         $value = array_pop ( $this->stylestack[$k] );
@@ -3235,6 +3237,8 @@ echo $txt;
 
 	function each_line($val) // PDF
 	{
+        $this->page_thrown_for_line = false;
+
 
         if ( !$this->columns_calculated )
         {
@@ -3315,7 +3319,7 @@ echo $txt;
 
 		$y = $this->document->GetY();
 		$this->check_graphic_fit();
-		
+
 		$this->yjump = 0;
 		if ( $this->body_display == "show" && get_reportico_session_param("target_show_detail") )
 		{
@@ -3370,7 +3374,7 @@ echo $txt;
 
             $this->cell_row_top_addition = $this->all_page_row_styles["style_border_top"];
             $this->cell_row_bottom_addition = $this->all_page_row_styles["style_border_bottom"];
-            
+
             $this->no_columns_printed = 0;
             foreach ( $this->columns as $col )
 			     $this->format_column($col);
@@ -3395,14 +3399,14 @@ echo $txt;
             return;
 
         $requires = $this->abs_metric($this->extract_style_tags ( "EACHLINE", $styleset, "requires-before" ));
-        if ( !$requires )   
+        if ( !$requires )
             return;
 
 		if ( $this->document->GetY() + $requires > $this->abs_bottom_margin )
 		{
 			$this->finish_page();
 			$this->begin_page();
-        
+
 			//$this->before_group_headers();
 			$this->page_line_count++;
 		}
@@ -3449,11 +3453,11 @@ echo $txt;
 				$qn = get_query_column($col->query_name, $this->query->columns ) ;
 				$sql = @preg_replace("/.*imagesql=/", "", $qn->column_value);
 				$sql = @preg_replace("/'>$/", "", $sql);
-				$str = 
+				$str =
 					&get_db_image_string(
-					$this->query->datasource->driver, 
-					$this->query->datasource->database, 
-					$this->query->datasource->host_name, 
+					$this->query->datasource->driver,
+					$this->query->datasource->database,
+					$this->query->datasource->host_name,
 					$sql,
 					$this->query->datasource->ado_connection
 				);
@@ -3521,6 +3525,11 @@ echo $txt;
 
 	function begin_page()
 	{
+        // Prevent a line being
+        if ( $this->page_thrown_for_line )
+            return;
+        $this->page_thrown_for_line = true;
+
 		reportico_report::begin_page();
 
         $this->page_footer_start_y = $this->abs_bottom_margin;
@@ -3624,7 +3633,7 @@ echo $txt;
 
 		$y = $this->abs_top_margin + ( $this->vsize * ( $header->line - 1 ) );
 		$this->set_position($tw,$y);
-		
+
         $tx = $header->text;
         $styles = $this->fetch_cell_styles($tx);
 	    $this->apply_style_tags( "PAGEHEADER", $styles);
@@ -3697,12 +3706,12 @@ echo $txt;
 			default :
 				$this->end_line();
 				break;
-				
-		}	
+
+		}
 	}
 
     function debugFile( $txt )
-    { 
+    {
         if ( !$this->debugFp )
             $this->debugFp = fopen ( "/tmp/debug.out", "w" );
 
@@ -3712,7 +3721,7 @@ echo $txt;
             fwrite ( $this->debugFp, "$txt\n" );
             //fwrite ( $this->debugFp, "$txt => Max $this->max_line_height Curr $this->current_line_height \n" );
 
-    } 
+    }
 
 
 
