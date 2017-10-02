@@ -1,0 +1,51 @@
+plugins {
+  id 'org.hidetake.ssh' version '2.9.0'
+}
+
+defaultTasks 'buildDist'
+
+def distTargetDir = name + '/'
+def deployTargetDir = 'www/reportico'
+def deployKey = file(System.getenv('RCAREDEPLOY_KEY_PATH') ?: System.getenv('HOME') + '/.ssh/rcaredeploy.id_rsa')
+
+remotes {
+	remsupport {
+		host = '10.199.0.1'
+		user = 'rcaredeploy'
+		identity = deployKey
+	}
+}
+
+task buildDist(type: Tar) {
+	from('./') {
+		exclude 'build.gradle'
+		exclude 'dist/'
+		exclude '.gradle/'
+		exclude '.git/'
+		into distTargetDir
+	} 
+	destinationDir = file('dist')
+	baseName = rootProject.name
+	extension = 'tar.gz'
+	compression = Compression.GZIP
+}
+
+task checkDeployKey {
+	doLast {
+		if(!deployKey.exists()) {
+			throw new GradleException('Could not find deploy key: ' + deployKey + '; Set path to key using RCAREDEPLOY_KEY_PATH environment var')
+		}
+	}
+}
+
+task deploy {
+	dependsOn ':checkDeployKey', ':buildDist'
+	doLast {
+		ssh.run {
+			session(remotes.remsupport) {
+				put from: 'dist/' + buildDist.archiveName, into: deployTargetDir
+			}
+		}
+	}
+}
+
