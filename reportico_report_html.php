@@ -7,7 +7,7 @@
  modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 2
  of the License, or (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -20,7 +20,7 @@
  * File:        reportico_report_html.php
  *
  * Base class for all report output formats.
- * Defines base functionality for handling report 
+ * Defines base functionality for handling report
  * page headers, footers, group headers, group trailers
  * data lines
  *
@@ -44,7 +44,7 @@ class reportico_report_html extends reportico_report
 	var	$graph_session_placeholder = 0;
 	var	$tbody_started = false;
 	var	$tfoot_started = false;
-	
+
 	function __construct ()
 	{
 		return;
@@ -75,7 +75,7 @@ class reportico_report_html extends reportico_report
         if ( preg_match("/\?/", $this->query->get_action_url()) )
             $url_join_char = "&";
         else
-            $url_join_char = "?"; 
+            $url_join_char = "?";
 
 		if ( $this->line_count < 1 )
 		{
@@ -85,26 +85,32 @@ class reportico_report_html extends reportico_report
 			if ( $forward )
 				$forward .= "&";
 
-            $this->text .= '<div class="swRepButtons">';
-            // In printable html mode dont show back box
-		    if ( !get_request_item("printable_html") )
-            {
-                // Show Go Back Button ( if user is not in "SINGLE REPORT RUN " )
-                if ( !$this->query->access_mode || ( $this->query->access_mode != "REPORTOUTPUT" )  )
-                {
-			        $this->text .= '<div class="swRepBackBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'execute_mode=PREPARE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_BACK").'">&nbsp;</a></div>';
-                }
-		        if ( get_reportico_session_param("show_refresh_button") )
-			        $this->text .= '<div class="swRepRefreshBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
-		        $this->text .= '<div class="reporticoJSONExecute"><a class="swJSONExecute1 testy" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&target_format=JSON&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
-            }
-            else
-            {
-		        $this->text .= '<div class="swRepPrintBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'printReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_PRINT").'">'.template_xlate("GO_PRINT").'</a></div>';
-            }
-            $this->text .= '</div>';
+			if($this->query->output_html_navigation) {
+				$this->text .= '<div class="swRepButtons">';
+				// In printable html mode dont show back box
+			    if ( !get_request_item("printable_html") )
+				{
+					// Show Go Back Button ( if user is not in "SINGLE REPORT RUN " )
+					if ( !$this->query->access_mode || ( $this->query->access_mode != "REPORTOUTPUT" )  )
+					{
+						$this->text .= '<div class="swRepBackBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'execute_mode=PREPARE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_BACK").'">&nbsp;</a></div>';
+					}
+					if ( get_reportico_session_param("show_refresh_button") )
+						$this->text .= '<div class="swRepRefreshBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
+					$this->text .= '<div class="reporticoJSONExecute"><a class="swJSONExecute1 testy" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&target_format=JSON&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
+				}
+				else
+				{
+					$this->text .= '<div class="swRepPrintBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'printReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_PRINT").'">'.template_xlate("GO_PRINT").'</a></div>';
+				}
+				$this->text .= '</div>';
+			}
 
-			$this->text .= '<div class="swRepNoRows">'.template_xlate("NO_DATA_FOUND").'</div>';
+			if($this->query->no_data_message != "") {
+				$this->text .= '<div class="swRepNoRows">'.$this->query->no_data_message.'</div>';
+			} else {
+				$this->text .= '<div class="swRepNoRows">'.template_xlate("NO_DATA_FOUND").'</div>';
+			}
 		}
 
 		if ( $this->report_file )
@@ -116,7 +122,7 @@ class reportico_report_html extends reportico_report
 			$this->debug("No html file specified !!!");
 			$buf = "";
 			$len = strlen($buf) + 1;
-	
+
 			print($buf);
 		}
 
@@ -133,9 +139,11 @@ class reportico_report_html extends reportico_report
         //$this->text .= "</footer>";
         $this->text .= "</div>";
         $this->footer_count++;
-        $this->text .= "<footer class=\"swPageFooterBlock swPageFooterBlock{$this->footer_count}\">";
-        $this->text .= "Page Footer";
-        $this->text .= "</footer>";
+		if($this->query->output_html_navigation) {
+			$this->text .= "<footer class=\"swPageFooterBlock swPageFooterBlock{$this->footer_count}\">";
+			$this->text .= "Page Footer";
+			$this->text .= "</footer>";
+		}
         $this->page_started = false;
 	}
 
@@ -224,11 +232,11 @@ class reportico_report_html extends reportico_report
     {
         $txt = '<img src="'.$image["image"].'" alt="" ';
         if ( isset($image["height"]) && $image["height"] ) $txt .= ' height="'.$image["height"].'"';
-        if ( isset($image["width"]) && $image["width"] ) $txt .= ' width="'.$image["width"].'"'; 
+        if ( isset($image["width"]) && $image["width"] ) $txt .= ' width="'.$image["width"].'"';
         $txt .= " /> ";
         return $txt;
     }
-    
+
     function format_hyperlinks ( $hyperlinks, $padstring )
     {
         $open = "";
@@ -255,7 +263,7 @@ class reportico_report_html extends reportico_report
             $txt = '<a href="'.$url.'"'.$open.'>'.$hyperlinks["label"].'</a>';
         return $txt;
     }
-    
+
     function extract_styles_and_text_from_string ( &$text, &$styles, &$attributes, $parent_styleset = false, $grandparent_styleset = false)
     {
         $outtext = "";
@@ -280,25 +288,25 @@ class reportico_report_html extends reportico_report
         if ( isset ( $attributes["justify"] ) )
         {
             if ( $attributes["justify"] == "center" )
-                $styles .= "text-align: center;"; 
+                $styles .= "text-align: center;";
             if ( $attributes["justify"] == "right" )
-                $styles .= "text-align: right;"; 
+                $styles .= "text-align: right;";
         }
 
         if ( isset ( $attributes["ColumnWidthPDF"] ) && $attributes["ColumnWidthPDF"] )
         {
             if ( is_numeric ($attributes["ColumnWidthPDF"]) )
-                $styles .= "width: ".$attributes["ColumnWidthPDF"]."px;"; 
+                $styles .= "width: ".$attributes["ColumnWidthPDF"]."px;";
             else
-                $styles .= "width: ".$attributes["ColumnWidthPDF"].";"; 
+                $styles .= "width: ".$attributes["ColumnWidthPDF"].";";
         }
 
         if ( isset ( $attributes["ColumnStartPDF"] ) && $attributes["ColumnStartPDF"] )
         {
             if ( is_numeric ($attributes["ColumnStartPDF"]) )
-                $styles .= "margin-left: ".$attributes["ColumnStartPDF"]."px;"; 
+                $styles .= "margin-left: ".$attributes["ColumnStartPDF"]."px;";
             else
-                $styles .= "margin-left: ".$attributes["ColumnStartPDF"]."24;"; 
+                $styles .= "margin-left: ".$attributes["ColumnStartPDF"]."24;";
         }
 
         if ( $style_arr )
@@ -410,8 +418,8 @@ class reportico_report_html extends reportico_report
 			default :
 				$this->text .= "<TR><TD>Unknown Format $in_value</TD></TR>";
 				break;
-				
-		}	
+
+		}
 	}
 
 	function format_headers()
@@ -535,7 +543,7 @@ class reportico_report_html extends reportico_report
 		if ( !get_reportico_session_param("target_show_group_trailers") )
 			return;
 		$just = $trailer_col->derive_attribute( "justify", false);
-        if ( $just && $just != "left" ) 
+        if ( $just && $just != "left" )
                 $this->query->output_group_trailer_styles["text-align"] = $just;
         else
                 $this->query->output_group_trailer_styles["text-align"] = "left";
@@ -632,7 +640,7 @@ class reportico_report_html extends reportico_report
                 switch ( $formpagethrow )
                 {
                     case "newpage":
-		                if ( $this->page_line_count > 0 ) 
+		                if ( $this->page_line_count > 0 )
                             $formpagethrow = "swRepPageFormLine swNewPage";
                         else
                             $formpagethrow = "swRepPageFormLine";
@@ -726,28 +734,29 @@ class reportico_report_html extends reportico_report
         if ( preg_match("/\?/", $this->query->get_action_url()) )
             $url_join_char = "&";
         else
-            $url_join_char = "?"; 
+            $url_join_char = "?";
 
+		if($this->query->output_html_navigation) {
+			if ( !get_request_item("printable_html") )
+			{
+				if ( !$this->query->access_mode || ( $this->query->access_mode != "REPORTOUTPUT" )  )
+				{
+					$this->text .= '<div class="swRepButtons">';
+					$this->text .= '<div class="swRepBackBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'execute_mode=PREPARE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_BACK").'">&nbsp;</a></div>';
+				}
+				if ( get_reportico_session_param("show_refresh_button") )
+					$this->text .= '<div class="swRepRefreshBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
+				$this->text .= '</div>';
 
-	    if ( !get_request_item("printable_html") )
-        {
-            if ( !$this->query->access_mode || ( $this->query->access_mode != "REPORTOUTPUT" )  )
-            {
-                $this->text .= '<div class="swRepButtons">';
-			    $this->text .= '<div class="swRepBackBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'execute_mode=PREPARE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_BACK").'">&nbsp;</a></div>';
-            }
-	        if ( get_reportico_session_param("show_refresh_button") )
-		        $this->text .= '<div class="swRepRefreshBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'refreshReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_REFRESH").'">&nbsp;</a></div>';
-            $this->text .= '</div>';
-
-        }
-        else
-        {
-        //$this->text .= '<div class="prepareAjaxExecuteIgnore swPDFBox1"><a class="swLinkMenu5 swPDFBox" target="_blank" href="'.$this->query->get_action_url().'?'.$forward.'refreshReport=1&target_format=PDF&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="Print PDF">&nbsp;</a></div>';
-            $this->text .= '<div class="swRepButtons">';
-	        $this->text .= '<div class="swRepPrintBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'printReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_PRINT").'">'.'&nbsp;'.'</a></div>';
-            $this->text .= '</div>';
-        }
+			}
+			else
+			{
+			//$this->text .= '<div class="prepareAjaxExecuteIgnore swPDFBox1"><a class="swLinkMenu5 swPDFBox" target="_blank" href="'.$this->query->get_action_url().'?'.$forward.'refreshReport=1&target_format=PDF&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="Print PDF">&nbsp;</a></div>';
+				$this->text .= '<div class="swRepButtons">';
+				$this->text .= '<div class="swRepPrintBox"><a class="swLinkMenu" href="'.$this->query->get_action_url().$url_join_char.$forward.'printReport=1&execute_mode=EXECUTE&reportico_session_name='.reportico_session_name().'" title="'.template_xlate("GO_PRINT").'">'.'&nbsp;'.'</a></div>';
+				$this->text .= '</div>';
+			}
+		}
 
         // Page Headers
 		reportico_report::page_headers();
