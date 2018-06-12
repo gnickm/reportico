@@ -3409,6 +3409,8 @@ class reportico extends reportico_object
 		$this->panels["RUNMODE"]->set_visibility(true);
 
 		$smarty->assign('REPORTICO_BOOTSTRAP_MODAL', true);
+		$smarty->assign('SHOW_MODAL', $this->output_html_navigation);
+
         if ( !$this->bootstrap_styles || $this->force_reportico_mini_maintains )
             $smarty->assign('REPORTICO_BOOTSTRAP_MODAL', false);
 

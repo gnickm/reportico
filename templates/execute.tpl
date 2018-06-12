@@ -231,6 +231,7 @@ function resizeOutputTables(window)
 {/if}
 {/if}
 
+{if $SHOW_MODAL}
 {if $REPORTICO_BOOTSTRAP_MODAL}
 {if $BOOTSTRAP_STYLES == "3" }
 <div class="modal fade" id="reporticoNoticeModal" tabindex="-1" role="dialog" aria-labelledby="reporticoNoticeModal" aria-hidden="true">
@@ -272,4 +273,5 @@ function resizeOutputTables(window)
     </div>
   </div>
 </div>
+{/if}
 {/if}
